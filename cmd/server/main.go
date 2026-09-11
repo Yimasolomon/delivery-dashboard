@@ -1,18 +1,37 @@
 package main
 
 import (
+	"database/sql"
 	"html/template"
 	"log"
 	"net/http"
 	"os"
+
+	"delivery-dashboard/internal/database"
 )
 
 type Application struct {
+	DB        *sql.DB
 	Templates *template.Template
 }
 
 func main() {
 	port := getEnv("PORT", "8080")
+	dbPath := getEnv("DB_PATH", "./data/deliveries.db")
+
+	db, err := database.Open(dbPath)
+	if err != nil {
+		log.Fatalf("failed to open database: %v", err)
+	}
+	defer db.Close()
+
+	if err := database.Migrate(db); err != nil {
+		log.Fatalf("failed to migrate database: %v", err)
+	}
+
+	if err := database.Seed(db); err != nil {
+		log.Fatalf("failed to seed database: %v", err)
+	}
 
 	templates, err := template.ParseGlob("templates/*.html")
 	if err != nil {
