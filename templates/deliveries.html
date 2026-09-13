@@ -1,0 +1,59 @@
+{{define "deliveries.html"}}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{.Title}}</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <main class="page">
+        <section class="page-header">
+            <div>
+                <h1>Deliveries</h1>
+                <p>Manage and track deliveries.</p>
+            </div>
+
+            <a href="/deliveries/create">Create Delivery</a>
+        </section>
+
+        <section class="table-section">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Tracking ID</th>
+                        <th>Status</th>
+                        <th>Customer ID</th>
+                        <th>Driver ID</th>
+                        <th>Pickup</th>
+                        <th>Destination</th>
+                        <th>Estimated Delivery</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {{range .Deliveries}}
+                    <tr>
+                        <td>{{.TrackingID}}</td>
+                        <td>{{.Status}}</td>
+                        <td>{{.CustomerID}}</td>
+                        <td>{{.DriverID}}</td>
+                        <td>{{.PickupAddress}}</td>
+                        <td>{{.DeliveryAddress}}</td>
+                        <td>{{.EstimatedDelivery}}</td>
+                    </tr>
+                    {{else}}
+                    <tr>
+                        <td colspan="7">No deliveries found.</td>
+                    </tr>
+                    {{end}}
+                </tbody>
+            </table>
+        </section>
+    </main>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
+{{end}}

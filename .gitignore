@@ -1,0 +1,12 @@
+# SQLite database
+data/*.db
+
+# Go build output
+/bin/
+/build/
+
+# Environment files
+.env
+
+# OS files
+.DS_Store

@@ -8,6 +8,9 @@ import (
 	"os"
 
 	"delivery-dashboard/internal/database"
+	"delivery-dashboard/internal/handler"
+	"delivery-dashboard/internal/repository"
+	"delivery-dashboard/internal/service"
 )
 
 type Application struct {
@@ -42,9 +45,28 @@ func main() {
 		Templates: templates,
 	}
 
+	deliveryRepository := repository.NewDeliveryRepository(db)
+	deliveryService := service.NewDeliveryService(deliveryRepository)
+
+	customerRepository := repository.NewCustomerRepository(db)
+	customerService := service.NewCustomerService(customerRepository)
+
+	driverRepository := repository.NewDriverRepository(db)
+	driverService := service.NewDriverService(driverRepository)
+
+	deliveryHandler := handler.NewDeliveryHandler(
+		deliveryService,
+		customerService,
+		driverService,
+		templates,
+	)
+
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/", app.homeHandler)
+
+	mux.HandleFunc("/deliveries", deliveryHandler.List)
+	mux.HandleFunc("/deliveries/create", deliveryHandler.CreateRoute)
 
 	fileServer := http.FileServer(http.Dir("./static"))
 	mux.Handle("/static/", http.StripPrefix("/static/", fileServer))
@@ -72,7 +94,7 @@ func (app *Application) homeHandler(w http.ResponseWriter, r *http.Request) {
 		Title: "Delivery Dashboard",
 	}
 
-	if err := app.Templates.ExecuteTemplate(w, "layout.html", data); err != nil {
+	if err := app.Templates.ExecuteTemplate(w, "home.html", data); err != nil {
 		log.Printf("templqte error: %v", err)
 		http.Error(w, "Intenal server error", http.StatusInternalServerError)
 	}

@@ -33,6 +33,13 @@ func Migrate(db *sql.DB) error {
 		`,
 
 		`
+		CREATE TABLE IF NOT EXISTS tracking_sequence (
+			id INTEGER PRIMARY KEY CHECK (id = 1),
+			next_value INTEGER NOT NULL
+		);
+		`,
+
+		`
 		CREATE TABLE IF NOT EXISTS deliveries (
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
 			tracking_id TEXT NOT NULL UNIQUE,
@@ -147,6 +154,49 @@ func createIndexes(db *sql.DB) error {
 		if _, err := db.Exec(statement); err != nil {
 			return fmt.Errorf("creating database index: %w", err)
 		}
+	}
+
+	return nil
+}
+
+func initializeTrackingSequence(db *sql.DB) error {
+	_, err := db.Exec(`
+		INSERT OR IGNORE INTO tracking_sequence (
+			id,
+			next_value
+		)
+		SELECT
+			1,
+			COALESCE(
+				MAX(CAST(SUBSTR(tracking_id, 5) AS INTEGER)) + 1,
+				100001
+			)
+		FROM deliveries
+		WHERE tracking_id LIKE 'TRK-%'
+	`)
+	if err != nil {
+		return fmt.Errorf("initializing tracking sequence: %w", err)
+	}
+
+	_, err = db.Exec(`
+		UPDATE tracking_sequence
+		SET next_value = MAX(
+			next_value,
+			COALESCE(
+				(
+					SELECT MAX(
+						CAST(SUBSTR(tracking_id, 5) AS INTEGER)
+					) + 1
+					FROM deliveries
+					WHERE tracking_id LIKE 'TRK-%'
+				),
+				100001
+			)
+		)
+		WHERE id = 1
+	`)
+	if err != nil {
+		return fmt.Errorf("synchronizing tracking sequence: %w", err)
 	}
 
 	return nil

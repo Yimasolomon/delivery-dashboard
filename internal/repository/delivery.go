@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"fmt"
 
 	"delivery-dashboard/internal/model"
 )
@@ -131,7 +132,27 @@ func (r *DeliveryRepository) GetByID(ctx context.Context, id int64) (model.Deliv
 }
 
 func (r *DeliveryRepository) Create(ctx context.Context, delivery model.Delivery) (int64, error) {
-	result, err := r.db.ExecContext(ctx, `
+	tx, err := r.db.BeginTx(ctx, nil)
+	if err != nil {
+		return 0, err
+	}
+	defer tx.Rollback()
+
+	var trackingNumber int64
+
+	err = tx.QueryRowContext(ctx, `
+		UPDATE tracking_sequence
+		SET next_value = next_value + 1
+		WHERE id = 1
+		RETURNING next_value - 1
+	`).Scan(&trackingNumber)
+	if err != nil {
+		return 0, err
+	}
+
+	trackingID := fmt.Sprintf("TRK-%06d", trackingNumber)
+
+	result, err := tx.ExecContext(ctx, `
 		INSERT INTO deliveries (
 			tracking_id,
 			customer_id,
@@ -149,7 +170,7 @@ func (r *DeliveryRepository) Create(ctx context.Context, delivery model.Delivery
 		)
 		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 	`,
-		delivery.TrackingID,
+		trackingID,
 		delivery.CustomerID,
 		delivery.DriverID,
 		delivery.PickupAddress,
@@ -169,6 +190,10 @@ func (r *DeliveryRepository) Create(ctx context.Context, delivery model.Delivery
 
 	id, err := result.LastInsertId()
 	if err != nil {
+		return 0, err
+	}
+
+	if err := tx.Commit(); err != nil {
 		return 0, err
 	}
 
