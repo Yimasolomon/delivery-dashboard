@@ -38,6 +38,10 @@ func Seed(db *sql.DB) error {
 		return err
 	}
 
+	if err := initializeTrackingSequenceTx(tx); err != nil {
+		return err
+	}
+
 	if err := tx.Commit(); err != nil {
 		return fmt.Errorf("committing seed transaction: %w", err)
 	}
@@ -743,6 +747,29 @@ func seedStatusHistory(
 				err,
 			)
 		}
+	}
+
+	return nil
+}
+
+func initializeTrackingSequenceTx(tx *sql.Tx) error {
+	_, err := tx.Exec(`
+		UPDATE tracking_sequence
+		SET next_value = COALESCE(
+			(
+				SELECT MAX(
+					CAST(SUBSTR(tracking_id, 5) AS INTEGER)
+				) + 1
+				FROM deliveries
+				WHERE tracking_id LIKE 'TRK-%'
+			),
+			100001
+		)
+		WHERE id = 1
+	`)
+
+	if err != nil {
+		return fmt.Errorf("synchronizing tracking sequence after seed: %w", err)
 	}
 
 	return nil

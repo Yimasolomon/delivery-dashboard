@@ -33,7 +33,7 @@ func main() {
 	}
 
 	if err := database.Seed(db); err != nil {
-		log.Fatalf("failed to seed database: %v", err)
+	log.Fatalf("failed to seed database: %v", err)
 	}
 
 	templates, err := template.ParseGlob("templates/*.html")

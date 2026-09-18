@@ -117,13 +117,24 @@ func Migrate(db *sql.DB) error {
 		`,
 	}
 
+	// Step 1: Create all tables first.
 	for _, statement := range statements {
 		if _, err := db.Exec(statement); err != nil {
 			return fmt.Errorf("executing migration: %w", err)
 		}
 	}
 
-	return createIndexes(db)
+	// Step 2: Create indexes after all required tables exist.
+	if err := createIndexes(db); err != nil {
+		return err
+	}
+
+	// Step 3: Initialize the tracking ID sequence.
+	if err := initializeTrackingSequence(db); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func createIndexes(db *sql.DB) error {
