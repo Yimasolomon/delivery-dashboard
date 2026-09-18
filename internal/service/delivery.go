@@ -25,6 +25,20 @@ func (s *DeliveryService) GetDelivery(ctx context.Context, id int64) (model.Deli
 	return s.repository.GetByID(ctx, id)
 }
 
+func (s *DeliveryService) GetStatusHistory(
+	ctx context.Context,
+	deliveryID int64,
+) ([]model.StatusHistory, error) {
+	return s.repository.GetStatusHistory(ctx, deliveryID)
+}
+
 func (s *DeliveryService) CreateDelivery(ctx context.Context, delivery model.Delivery) (int64, error) {
 	return s.repository.Create(ctx, delivery)
+}
+
+func (s *DeliveryService) UpdateDelivery(
+	ctx context.Context,
+	delivery model.Delivery,
+) error {
+	return s.repository.Update(ctx, delivery)
 }

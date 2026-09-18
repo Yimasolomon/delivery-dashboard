@@ -4,8 +4,10 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 
+	"delivery-dashboard/internal/model"
 	"delivery-dashboard/internal/service"
 )
 
@@ -151,4 +153,137 @@ func (h *DeliveryHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	http.Redirect(w, r, "/deliveries", http.StatusSeeOther)
+}
+
+func (h *DeliveryHandler) Details(w http.ResponseWriter, r *http.Request) {
+	if strings.HasSuffix(strings.TrimSuffix(r.URL.Path, "/"), "/edit") {
+		h.EditForm(w, r)
+		return
+	}
+
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	idString := strings.TrimPrefix(r.URL.Path, "/deliveries/")
+
+	id, err := strconv.ParseInt(idString, 10, 64)
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	delivery, err := h.service.GetDelivery(r.Context(), id)
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	customer, err := h.customerService.GetCustomer(
+		r.Context(),
+		delivery.CustomerID,
+	)
+	if err != nil {
+		http.Error(w, "Failed to load customer", http.StatusInternalServerError)
+		return
+	}
+
+	driver, err := h.driverService.GetDriver(
+		r.Context(),
+		delivery.DriverID,
+	)
+	if err != nil {
+		http.Error(w, "Failed to load driver", http.StatusInternalServerError)
+		return
+	}
+
+	history, err := h.service.GetStatusHistory(
+		r.Context(),
+		delivery.ID,
+	)
+	if err != nil {
+		http.Error(w, "Failed to load status history", http.StatusInternalServerError)
+		return
+	}
+
+	data := struct {
+		Title    string
+		Delivery interface{}
+		Customer interface{}
+		Driver   interface{}
+		History  interface{}
+	}{
+		Title:    "Delivery Details",
+		Delivery: delivery,
+		Customer: customer,
+		Driver:   driver,
+		History:  history,
+	}
+
+	if err := h.template.ExecuteTemplate(
+		w,
+		"delivery-details.html",
+		data,
+	); err != nil {
+		log.Printf("failed to render delivery details: %v", err)
+		http.Error(w, "Failed to render delivery details", http.StatusInternalServerError)
+		return
+	}
+}
+
+func (h *DeliveryHandler) EditForm(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	idString := strings.TrimPrefix(r.URL.Path, "/deliveries/")
+	idString = strings.TrimSuffix(idString, "/edit")
+
+	id, err := strconv.ParseInt(idString, 10, 64)
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	delivery, err := h.service.GetDelivery(r.Context(), id)
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	customers, err := h.customerService.ListCustomers(r.Context())
+	if err != nil {
+		http.Error(w, "Failed to load customers", http.StatusInternalServerError)
+		return
+	}
+
+	drivers, err := h.driverService.ListDrivers(r.Context())
+	if err != nil {
+		http.Error(w, "Failed to load drivers", http.StatusInternalServerError)
+		return
+	}
+
+	data := struct {
+		Title     string
+		Delivery  model.Delivery
+		Customers []model.Customer
+		Drivers   []model.Driver
+	}{
+		Title:     "Edit Delivery",
+		Delivery:  delivery,
+		Customers: customers,
+		Drivers:   drivers,
+	}
+
+	if err := h.template.ExecuteTemplate(
+		w,
+		"delivery-edit.html",
+		data,
+	); err != nil {
+		log.Printf("failed to render delivery edit form: %v", err)
+		http.Error(w, "Failed to render delivery edit form", http.StatusInternalServerError)
+		return
+	}
 }

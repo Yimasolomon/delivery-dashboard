@@ -202,23 +202,21 @@ func (r *DeliveryRepository) Create(ctx context.Context, delivery model.Delivery
 
 func (r *DeliveryRepository) Update(ctx context.Context, delivery model.Delivery) error {
 	result, err := r.db.ExecContext(ctx, `
-		UPDATE deliveries
-		SET
-			customer_id = ?,
-			driver_id = ?,
-			pickup_address = ?,
-			delivery_address = ?,
-			package_description = ?,
-			quantity = ?,
-			weight = ?,
-			delivery_date = ?,
-			estimated_delivery = ?,
-			delivered_at = ?,
-			status = ?,
-			notes = ?,
-			updated_at = CURRENT_TIMESTAMP
-		WHERE id = ?
-	`,
+        UPDATE deliveries
+        SET
+            customer_id = ?,
+            driver_id = ?,
+            pickup_address = ?,
+            delivery_address = ?,
+            package_description = ?,
+            quantity = ?,
+            weight = ?,
+            delivery_date = ?,
+            estimated_delivery = ?,
+            notes = ?,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id = ?
+    `,
 		delivery.CustomerID,
 		delivery.DriverID,
 		delivery.PickupAddress,
@@ -228,11 +226,10 @@ func (r *DeliveryRepository) Update(ctx context.Context, delivery model.Delivery
 		delivery.Weight,
 		delivery.DeliveryDate,
 		delivery.EstimatedDelivery,
-		delivery.DeliveredAt,
-		delivery.Status,
 		delivery.Notes,
 		delivery.ID,
 	)
+
 	if err != nil {
 		return err
 	}

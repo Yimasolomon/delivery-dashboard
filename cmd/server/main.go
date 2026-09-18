@@ -33,7 +33,7 @@ func main() {
 	}
 
 	if err := database.Seed(db); err != nil {
-	log.Fatalf("failed to seed database: %v", err)
+		log.Fatalf("failed to seed database: %v", err)
 	}
 
 	templates, err := template.ParseGlob("templates/*.html")
@@ -67,6 +67,7 @@ func main() {
 
 	mux.HandleFunc("/deliveries", deliveryHandler.List)
 	mux.HandleFunc("/deliveries/create", deliveryHandler.CreateRoute)
+	mux.HandleFunc("/deliveries/", deliveryHandler.Details)
 
 	fileServer := http.FileServer(http.Dir("./static"))
 	mux.Handle("/static/", http.StripPrefix("/static/", fileServer))

@@ -1,0 +1,130 @@
+{{define "delivery-details.html"}}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{.Title}}</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+<main class="page">
+
+    <div class="page-header">
+        <div>
+            <h1>Delivery Details</h1>
+            <p>View the complete information and status history for this delivery.</p>
+        </div>
+
+        <a href="/deliveries">Back to Deliveries</a>
+    </div>
+
+    <section class="card">
+        <h2>{{.Delivery.TrackingID}}</h2>
+
+        <div class="details-grid">
+
+            <div>
+                <strong>Status</strong>
+                <p>{{.Delivery.Status}}</p>
+            </div>
+
+            <div>
+                <strong>Customer</strong>
+                <p>{{.Customer.Name}}</p>
+            </div>
+
+            <div>
+                <strong>Customer Phone</strong>
+                <p>{{.Customer.Phone}}</p>
+            </div>
+
+            <div>
+                <strong>Driver</strong>
+                <p>{{.Driver.Name}}</p>
+            </div>
+
+            <div>
+                <strong>Driver Phone</strong>
+                <p>{{.Driver.Phone}}</p>
+            </div>
+
+            <div>
+                <strong>Vehicle</strong>
+                <p>{{.Driver.Vehicle}}</p>
+            </div>
+
+            <div>
+                <strong>Pickup Address</strong>
+                <p>{{.Delivery.PickupAddress}}</p>
+            </div>
+
+            <div>
+                <strong>Delivery Address</strong>
+                <p>{{.Delivery.DeliveryAddress}}</p>
+            </div>
+
+            <div>
+                <strong>Package</strong>
+                <p>{{.Delivery.PackageDescription}}</p>
+            </div>
+
+            <div>
+                <strong>Quantity</strong>
+                <p>{{.Delivery.Quantity}}</p>
+            </div>
+
+            <div>
+                <strong>Weight</strong>
+                <p>{{.Delivery.Weight}}</p>
+            </div>
+
+            <div>
+                <strong>Delivery Date</strong>
+                <p>{{.Delivery.DeliveryDate}}</p>
+            </div>
+
+            <div>
+                <strong>Estimated Delivery</strong>
+                <p>{{.Delivery.EstimatedDelivery}}</p>
+            </div>
+
+            <div>
+                <strong>Notes</strong>
+                <p>{{.Delivery.Notes}}</p>
+            </div>
+
+        </div>
+    </section>
+
+    <section class="card">
+        <h2>Status History</h2>
+
+        {{if .History}}
+            <div class="status-history">
+                {{range .History}}
+                    <div class="history-item">
+                        <strong>{{.Status}}</strong>
+
+                        {{if .Note}}
+                            <p>{{.Note}}</p>
+                        {{end}}
+
+                        <small>{{.CreatedAt}}</small>
+                    </div>
+                {{end}}
+            </div>
+        {{else}}
+            <p>No status history available.</p>
+        {{end}}
+
+    </section>
+
+</main>
+
+<script src="/static/js/app.js"></script>
+
+</body>
+</html>
+{{end}}

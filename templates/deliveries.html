@@ -29,6 +29,7 @@
                         <th>Pickup</th>
                         <th>Destination</th>
                         <th>Estimated Delivery</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
 
@@ -42,6 +43,9 @@
                         <td>{{.PickupAddress}}</td>
                         <td>{{.DeliveryAddress}}</td>
                         <td>{{.EstimatedDelivery}}</td>
+                        <td>
+                            <a href="/deliveries/{{.ID}}">View Details</a>
+                        </td>
                     </tr>
                     {{else}}
                     <tr>
