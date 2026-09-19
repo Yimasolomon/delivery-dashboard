@@ -279,13 +279,28 @@ func (r *DeliveryRepository) UpdateStatus(
 	}
 	defer tx.Rollback()
 
-	result, err := tx.ExecContext(ctx, `
-		UPDATE deliveries
-		SET
-			status = ?,
-			updated_at = CURRENT_TIMESTAMP
-		WHERE id = ?
-	`, status, deliveryID)
+	var result sql.Result
+
+	if status == "delivered" {
+		result, err = tx.ExecContext(ctx, `
+			UPDATE deliveries
+			SET
+				status = ?,
+				delivered_at = CURRENT_TIMESTAMP,
+				updated_at = CURRENT_TIMESTAMP
+			WHERE id = ?
+		`, status, deliveryID)
+	} else {
+		result, err = tx.ExecContext(ctx, `
+			UPDATE deliveries
+			SET
+				status = ?,
+				delivered_at = NULL,
+				updated_at = CURRENT_TIMESTAMP
+			WHERE id = ?
+		`, status, deliveryID)
+	}
+
 	if err != nil {
 		return err
 	}

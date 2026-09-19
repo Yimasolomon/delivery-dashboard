@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 
 	"delivery-dashboard/internal/model"
 	"delivery-dashboard/internal/repository"
@@ -41,4 +42,50 @@ func (s *DeliveryService) UpdateDelivery(
 	delivery model.Delivery,
 ) error {
 	return s.repository.Update(ctx, delivery)
+}
+
+func (s *DeliveryService) UpdateStatus(
+	ctx context.Context,
+	deliveryID int64,
+	status string,
+	note string,
+) error {
+	delivery, err := s.repository.GetByID(ctx, deliveryID)
+	if err != nil {
+		return err
+	}
+
+	allowedTransitions := map[string]map[string]bool{
+		"pending": {
+			"picked_up": true,
+			"cancelled": true,
+		},
+		"picked_up": {
+			"in_transit": true,
+			"failed":     true,
+		},
+		"in_transit": {
+			"out_for_delivery": true,
+			"failed":           true,
+		},
+		"out_for_delivery": {
+			"delivered": true,
+			"failed":    true,
+		},
+	}
+
+	if !allowedTransitions[delivery.Status][status] {
+		return fmt.Errorf(
+			"cannot change status from %q to %q",
+			delivery.Status,
+			status,
+		)
+	}
+
+	return s.repository.UpdateStatus(
+		ctx,
+		deliveryID,
+		status,
+		note,
+	)
 }

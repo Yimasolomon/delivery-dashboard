@@ -99,6 +99,45 @@
         </div>
     </section>
 
+        <section class="card">
+        <h2>Update Status</h2>
+
+        {{if .AllowedStatuses}}
+            <form method="POST" action="/deliveries/{{.Delivery.ID}}/status">
+
+                <div>
+                    <label for="status">New Status</label>
+
+                    <select id="status" name="status" required>
+                        <option value="">Select status</option>
+
+                        {{range .AllowedStatuses}}
+                            <option value="{{.}}">{{.}}</option>
+                        {{end}}
+                    </select>
+                </div>
+
+                <div>
+                    <label for="note">Note</label>
+
+                    <textarea
+                        id="note"
+                        name="note"
+                        rows="3"
+                        placeholder="Optional status update note"
+                    ></textarea>
+                </div>
+
+                <button type="submit">
+                    Update Status
+                </button>
+
+            </form>
+        {{else}}
+            <p>This delivery has no available status transitions.</p>
+        {{end}}
+    </section>
+
     <section class="card">
         <h2>Status History</h2>
 

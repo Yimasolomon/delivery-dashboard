@@ -172,6 +172,17 @@ func (h *DeliveryHandler) Details(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if strings.HasSuffix(path, "/status") {
+		if r.Method != http.MethodPost {
+			w.Header().Set("Allow", "POST")
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+
+		h.UpdateStatus(w, r)
+		return
+	}
+
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
@@ -218,18 +229,39 @@ func (h *DeliveryHandler) Details(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	allowedStatuses := map[string][]string{
+		"pending": {
+			"picked_up",
+			"cancelled",
+		},
+		"picked_up": {
+			"in_transit",
+			"failed",
+		},
+		"in_transit": {
+			"out_for_delivery",
+			"failed",
+		},
+		"out_for_delivery": {
+			"delivered",
+			"failed",
+		},
+	}
+
 	data := struct {
-		Title    string
-		Delivery interface{}
-		Customer interface{}
-		Driver   interface{}
-		History  interface{}
+		Title           string
+		Delivery        interface{}
+		Customer        interface{}
+		Driver          interface{}
+		History         interface{}
+		AllowedStatuses []string
 	}{
-		Title:    "Delivery Details",
-		Delivery: delivery,
-		Customer: customer,
-		Driver:   driver,
-		History:  history,
+		Title:           "Delivery Details",
+		Delivery:        delivery,
+		Customer:        customer,
+		Driver:          driver,
+		History:         history,
+		AllowedStatuses: allowedStatuses[delivery.Status],
 	}
 
 	if err := h.template.ExecuteTemplate(
@@ -342,6 +374,48 @@ func (h *DeliveryHandler) Update(w http.ResponseWriter, r *http.Request) {
 	if err := h.service.UpdateDelivery(r.Context(), delivery); err != nil {
 		log.Printf("failed to update delivery %d: %v", id, err)
 		http.Error(w, "Failed to update delivery", http.StatusInternalServerError)
+		return
+	}
+
+	http.Redirect(
+		w,
+		r,
+		fmt.Sprintf("/deliveries/%d", id),
+		http.StatusSeeOther,
+	)
+}
+
+func (h *DeliveryHandler) UpdateStatus(w http.ResponseWriter, r *http.Request) {
+	idString := strings.TrimPrefix(r.URL.Path, "/deliveries/")
+	idString = strings.TrimSuffix(idString, "/status")
+
+	id, err := strconv.ParseInt(idString, 10, 64)
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "Invalid form submission", http.StatusBadRequest)
+		return
+	}
+
+	status := strings.TrimSpace(r.FormValue("status"))
+	note := strings.TrimSpace(r.FormValue("note"))
+
+	if status == "" {
+		http.Error(w, "Status is required", http.StatusBadRequest)
+		return
+	}
+
+	if err := h.service.UpdateStatus(
+		r.Context(),
+		id,
+		status,
+		note,
+	); err != nil {
+		log.Printf("failed to update status for delivery %d: %v", id, err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
