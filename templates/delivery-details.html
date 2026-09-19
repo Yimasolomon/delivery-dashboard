@@ -19,6 +19,13 @@
 
         <a href="/deliveries">Back to Deliveries</a>
         <a href="/deliveries/{{.Delivery.ID}}/edit">Edit Delivery</a>
+        <form
+            method="POST"
+            action="/deliveries/{{.Delivery.ID}}/delete"
+            onsubmit="return confirm('Are you sure you want to delete this delivery?');"
+        >
+            <button type="submit">Delete Delivery</button>
+        </form>
     </div>
 
     <section class="card">

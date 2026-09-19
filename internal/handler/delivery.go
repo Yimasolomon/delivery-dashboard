@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"database/sql"
+	"errors"
 	"fmt"
 	"html/template"
 	"log"
@@ -157,7 +159,19 @@ func (h *DeliveryHandler) Create(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *DeliveryHandler) Details(w http.ResponseWriter, r *http.Request) {
+
 	path := strings.Trim(strings.TrimPrefix(r.URL.Path, "/deliveries/"), "/")
+
+	if strings.HasSuffix(path, "/delete") {
+		if r.Method != http.MethodPost {
+			w.Header().Set("Allow", "POST")
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+
+		h.Delete(w, r)
+		return
+	}
 
 	if strings.HasSuffix(path, "/edit") {
 		switch r.Method {
@@ -383,6 +397,30 @@ func (h *DeliveryHandler) Update(w http.ResponseWriter, r *http.Request) {
 		fmt.Sprintf("/deliveries/%d", id),
 		http.StatusSeeOther,
 	)
+}
+
+func (h *DeliveryHandler) Delete(w http.ResponseWriter, r *http.Request) {
+	idString := strings.TrimPrefix(r.URL.Path, "/deliveries/")
+	idString = strings.TrimSuffix(idString, "/delete")
+
+	id, err := strconv.ParseInt(idString, 10, 64)
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	if err := h.service.DeleteDelivery(r.Context(), id); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			http.NotFound(w, r)
+			return
+		}
+
+		log.Printf("failed to delete delivery %d: %v", id, err)
+		http.Error(w, "Failed to delete delivery", http.StatusInternalServerError)
+		return
+	}
+
+	http.Redirect(w, r, "/deliveries", http.StatusSeeOther)
 }
 
 func (h *DeliveryHandler) UpdateStatus(w http.ResponseWriter, r *http.Request) {

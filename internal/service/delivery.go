@@ -44,6 +44,13 @@ func (s *DeliveryService) UpdateDelivery(
 	return s.repository.Update(ctx, delivery)
 }
 
+func (s *DeliveryService) DeleteDelivery(
+	ctx context.Context,
+	deliveryID int64,
+) error {
+	return s.repository.Delete(ctx, deliveryID)
+}
+
 func (s *DeliveryService) UpdateStatus(
 	ctx context.Context,
 	deliveryID int64,
