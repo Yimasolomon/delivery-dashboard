@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"html/template"
 	"log"
 	"net/http"
@@ -156,8 +157,18 @@ func (h *DeliveryHandler) Create(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *DeliveryHandler) Details(w http.ResponseWriter, r *http.Request) {
-	if strings.HasSuffix(strings.TrimSuffix(r.URL.Path, "/"), "/edit") {
-		h.EditForm(w, r)
+	path := strings.Trim(strings.TrimPrefix(r.URL.Path, "/deliveries/"), "/")
+
+	if strings.HasSuffix(path, "/edit") {
+		switch r.Method {
+		case http.MethodGet:
+			h.EditForm(w, r)
+		case http.MethodPost:
+			h.Update(w, r)
+		default:
+			w.Header().Set("Allow", "GET, POST")
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		}
 		return
 	}
 
@@ -286,4 +297,58 @@ func (h *DeliveryHandler) EditForm(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to render delivery edit form", http.StatusInternalServerError)
 		return
 	}
+}
+
+func (h *DeliveryHandler) Update(w http.ResponseWriter, r *http.Request) {
+	idString := strings.TrimPrefix(r.URL.Path, "/deliveries/")
+	idString = strings.TrimSuffix(idString, "/edit")
+
+	id, err := strconv.ParseInt(idString, 10, 64)
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	existing, err := h.service.GetDelivery(r.Context(), id)
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "Invalid form submission", http.StatusBadRequest)
+		return
+	}
+
+	form := updateDeliveryForm{
+		CustomerID:         r.FormValue("customer_id"),
+		DriverID:           r.FormValue("driver_id"),
+		PickupAddress:      r.FormValue("pickup_address"),
+		DeliveryAddress:    r.FormValue("delivery_address"),
+		PackageDescription: r.FormValue("package_description"),
+		Quantity:           r.FormValue("quantity"),
+		Weight:             r.FormValue("weight"),
+		DeliveryDate:       r.FormValue("delivery_date"),
+		EstimatedDelivery:  r.FormValue("estimated_delivery"),
+		Notes:              r.FormValue("notes"),
+	}
+
+	delivery, err := form.toModel(existing)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if err := h.service.UpdateDelivery(r.Context(), delivery); err != nil {
+		log.Printf("failed to update delivery %d: %v", id, err)
+		http.Error(w, "Failed to update delivery", http.StatusInternalServerError)
+		return
+	}
+
+	http.Redirect(
+		w,
+		r,
+		fmt.Sprintf("/deliveries/%d", id),
+		http.StatusSeeOther,
+	)
 }
