@@ -41,6 +41,14 @@ func (h *DeliveryHandler) List(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	page, _ := strconv.Atoi(r.URL.Query().Get("page"))
+
+	if page < 1 {
+		page = 1
+	}
+
+	pageSize := 10
+
 	driverID, _ := strconv.ParseInt(
 		r.URL.Query().Get("driver"),
 		10,
@@ -48,9 +56,15 @@ func (h *DeliveryHandler) List(w http.ResponseWriter, r *http.Request) {
 	)
 
 	filter := model.DeliveryFilter{
-		Search:   strings.TrimSpace(r.URL.Query().Get("search")),
-		Status:   strings.TrimSpace(r.URL.Query().Get("status")),
-		DriverID: driverID,
+		Search:    strings.TrimSpace(r.URL.Query().Get("search")),
+		Status:    strings.TrimSpace(r.URL.Query().Get("status")),
+		DriverID:  driverID,
+		DateFrom:  strings.TrimSpace(r.URL.Query().Get("date_from")),
+		DateTo:    strings.TrimSpace(r.URL.Query().Get("date_to")),
+		SortBy:    strings.TrimSpace(r.URL.Query().Get("sort")),
+		SortOrder: strings.TrimSpace(r.URL.Query().Get("order")),
+		Page:      page,
+		PageSize:  pageSize,
 	}
 
 	deliveries, err := h.service.ListDeliveries(
@@ -64,6 +78,19 @@ func (h *DeliveryHandler) List(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	totalDeliveries, err := h.service.CountDeliveries(
+		r.Context(),
+		filter,
+	)
+
+	if err != nil {
+		log.Printf("failed to count deliveries: %v", err)
+		http.Error(w, "Failed to count deliveries", http.StatusInternalServerError)
+		return
+	}
+
+	totalPages := (totalDeliveries + pageSize - 1) / pageSize
+
 	drivers, err := h.driverService.ListDrivers(r.Context())
 	if err != nil {
 		log.Printf("failed to load drivers: %v", err)
@@ -72,19 +99,27 @@ func (h *DeliveryHandler) List(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data := struct {
-		Title            string
 		Deliveries       interface{}
-		Search           string
-		Status           string
-		DriverID         int64
+		Page             int
+		PageSize         int
+		TotalDeliveries  int
+		TotalPages       int
+		HasPrevious      bool
+		HasNext          bool
+		PreviousPage     int
+		NextPage         int
 		DeliveryStatuses []string
 		Drivers          interface{}
 	}{
-		Title:            "Deliveries",
 		Deliveries:       deliveries,
-		Search:           filter.Search,
-		Status:           filter.Status,
-		DriverID:         filter.DriverID,
+		Page:             page,
+		PageSize:         pageSize,
+		TotalDeliveries:  totalDeliveries,
+		TotalPages:       totalPages,
+		HasPrevious:      page > 1,
+		HasNext:          page < totalPages,
+		PreviousPage:     page - 1,
+		NextPage:         page + 1,
 		DeliveryStatuses: model.DeliveryStatuses,
 		Drivers:          drivers,
 	}

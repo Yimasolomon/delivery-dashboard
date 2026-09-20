@@ -37,6 +37,22 @@
                     {{end}}
                 </select>
 
+                <label for="date_from">From</label>
+                    <input
+                        type="date"
+                        id="date_from"
+                        name="date_from"
+                        value="{{.DateFrom}}"
+                    >
+
+                    <label for="date_to">To</label>
+                    <input
+                        type="date"
+                        id="date_to"
+                        name="date_to"
+                        value="{{.DateTo}}"
+                >
+
                 <select name="driver">
                     <option value="">All Drivers</option>
 
@@ -48,6 +64,32 @@
                             {{.Name}}
                         </option>
                     {{end}}
+                </select>
+
+                <label for="sort">Sort By</label>
+                <select id="sort" name="sort">
+                    <option value="created_at" {{if eq .SortBy "created_at"}}selected{{end}}>
+                        Created Date
+                    </option>
+                    <option value="delivery_date" {{if eq .SortBy "delivery_date"}}selected{{end}}>
+                        Delivery Date
+                    </option>
+                    <option value="status" {{if eq .SortBy "status"}}selected{{end}}>
+                        Status
+                    </option>
+                    <option value="tracking_id" {{if eq .SortBy "tracking_id"}}selected{{end}}>
+                        Tracking ID
+                    </option>
+                </select>
+
+                <label for="order">Order</label>
+                <select id="order" name="order">
+                    <option value="desc" {{if eq .SortOrder "desc"}}selected{{end}}>
+                        Descending
+                    </option>
+                    <option value="asc" {{if eq .SortOrder "asc"}}selected{{end}}>
+                        Ascending
+                    </option>
                 </select>
 
                 <button type="submit">Search</button>
@@ -94,7 +136,31 @@
         </section>
     </main>
 
-    <script src="/static/js/app.js"></script>
+            </section>
+
+        {{if gt .TotalPages 1}}
+        <section class="pagination">
+
+            {{if gt .Page 1}}
+                <a href="/deliveries?page={{sub .Page 1}}&search={{.Search}}&status={{.Status}}&driver={{.DriverID}}&date_from={{.DateFrom}}&date_to={{.DateTo}}&sort={{.SortBy}}&order={{.SortOrder}}">
+                    Previous
+                </a>
+            {{end}}
+
+            <span>
+                Page {{.Page}} of {{.TotalPages}}
+            </span>
+
+            {{if lt .Page .TotalPages}}
+                <a href="/deliveries?page={{add .Page 1}}&search={{.Search}}&status={{.Status}}&driver={{.DriverID}}&date_from={{.DateFrom}}&date_to={{.DateTo}}&sort={{.SortBy}}&order={{.SortOrder}}">
+                    Next
+                </a>
+            {{end}}
+
+        </section>
+        {{end}}
+
+    </main>
 </body>
 </html>
 {{end}}

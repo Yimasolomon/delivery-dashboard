@@ -22,6 +22,27 @@ func (r *DeliveryRepository) List(
 	ctx context.Context,
 	filter model.DeliveryFilter,
 ) ([]model.Delivery, error) {
+
+	sortColumn := "d.created_at"
+	sortOrder := "DESC"
+
+	switch filter.SortBy {
+	case "delivery_date":
+		sortColumn = "d.delivery_date"
+	case "created_at":
+		sortColumn = "d.created_at"
+	case "status":
+		sortColumn = "d.status"
+	case "tracking_id":
+		sortColumn = "d.tracking_id"
+	}
+
+	if filter.SortOrder == "asc" {
+		sortOrder = "ASC"
+	}
+
+	offset := (filter.Page - 1) * filter.PageSize
+
 	rows, err := r.db.QueryContext(ctx, `
 		SELECT
 			d.id,
@@ -58,7 +79,16 @@ func (r *DeliveryRepository) List(
 				? = 0
 				OR d.driver_id = ?
 			)
-		ORDER BY d.created_at DESC
+			AND (
+				? = ''
+				OR d.delivery_date >= ?
+			)
+			AND (
+					? = ''
+					OR d.delivery_date <= ?
+			)
+			ORDER BY `+sortColumn+` `+sortOrder+`
+			LIMIT ? OFFSET ?
 	`,
 		filter.Search,
 		filter.Search,
@@ -69,6 +99,13 @@ func (r *DeliveryRepository) List(
 		filter.Status,
 		filter.DriverID,
 		filter.DriverID,
+		filter.DateFrom,
+		filter.DateFrom,
+		filter.DateTo,
+		filter.DateTo,
+		filter.PageSize,
+		(filter.Page-1)*filter.PageSize,
+		offset,
 	)
 	if err != nil {
 		return nil, err
@@ -110,6 +147,63 @@ func (r *DeliveryRepository) List(
 	}
 
 	return deliveries, nil
+}
+
+func (r *DeliveryRepository) Count(
+	ctx context.Context,
+	filter model.DeliveryFilter,
+) (int, error) {
+	var count int
+
+	err := r.db.QueryRowContext(ctx, `
+		SELECT COUNT(*)
+		FROM deliveries d
+		LEFT JOIN customers c ON c.id = d.customer_id
+		WHERE
+			(
+				? = ''
+				OR d.tracking_id LIKE '%' || ? || '%'
+				OR c.name LIKE '%' || ? || '%'
+				OR c.phone LIKE '%' || ? || '%'
+				OR d.delivery_address LIKE '%' || ? || '%'
+			)
+			AND (
+				? = ''
+				OR d.status = ?
+			)
+			AND (
+				? = 0
+				OR d.driver_id = ?
+			)
+			AND (
+				? = ''
+				OR d.delivery_date >= ?
+			)
+			AND (
+				? = ''
+				OR d.delivery_date <= ?
+			)
+	`,
+		filter.Search,
+		filter.Search,
+		filter.Search,
+		filter.Search,
+		filter.Search,
+		filter.Status,
+		filter.Status,
+		filter.DriverID,
+		filter.DriverID,
+		filter.DateFrom,
+		filter.DateFrom,
+		filter.DateTo,
+		filter.DateTo,
+	).Scan(&count)
+
+	if err != nil {
+		return 0, err
+	}
+
+	return count, nil
 }
 
 func (r *DeliveryRepository) GetByID(ctx context.Context, id int64) (model.Delivery, error) {
