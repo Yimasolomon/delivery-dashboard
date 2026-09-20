@@ -18,8 +18,11 @@ func NewDeliveryService(repository *repository.DeliveryRepository) *DeliveryServ
 	}
 }
 
-func (s *DeliveryService) ListDeliveries(ctx context.Context) ([]model.Delivery, error) {
-	return s.repository.List(ctx)
+func (s *DeliveryService) ListDeliveries(
+	ctx context.Context,
+	filter model.DeliveryFilter,
+) ([]model.Delivery, error) {
+	return s.repository.List(ctx, filter)
 }
 
 func (s *DeliveryService) GetDelivery(ctx context.Context, id int64) (model.Delivery, error) {

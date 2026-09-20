@@ -18,28 +18,58 @@ func NewDeliveryRepository(db *sql.DB) *DeliveryRepository {
 	}
 }
 
-func (r *DeliveryRepository) List(ctx context.Context) ([]model.Delivery, error) {
+func (r *DeliveryRepository) List(
+	ctx context.Context,
+	filter model.DeliveryFilter,
+) ([]model.Delivery, error) {
 	rows, err := r.db.QueryContext(ctx, `
 		SELECT
-			id,
-			tracking_id,
-			customer_id,
-			driver_id,
-			pickup_address,
-			delivery_address,
-			package_description,
-			quantity,
-			weight,
-			delivery_date,
-			estimated_delivery,
-			delivered_at,
-			status,
-			notes,
-			created_at,
-			updated_at
-		FROM deliveries
-		ORDER BY created_at DESC
-	`)
+			d.id,
+			d.tracking_id,
+			d.customer_id,
+			d.driver_id,
+			d.pickup_address,
+			d.delivery_address,
+			d.package_description,
+			d.quantity,
+			d.weight,
+			d.delivery_date,
+			d.estimated_delivery,
+			d.delivered_at,
+			d.status,
+			d.notes,
+			d.created_at,
+			d.updated_at
+		FROM deliveries d
+		LEFT JOIN customers c ON c.id = d.customer_id
+		WHERE
+			(
+				? = ''
+				OR d.tracking_id LIKE '%' || ? || '%'
+				OR c.name LIKE '%' || ? || '%'
+				OR c.phone LIKE '%' || ? || '%'
+				OR d.delivery_address LIKE '%' || ? || '%'
+			)
+			AND (
+				? = ''
+				OR d.status = ?
+			)
+			AND (
+				? = 0
+				OR d.driver_id = ?
+			)
+		ORDER BY d.created_at DESC
+	`,
+		filter.Search,
+		filter.Search,
+		filter.Search,
+		filter.Search,
+		filter.Search,
+		filter.Status,
+		filter.Status,
+		filter.DriverID,
+		filter.DriverID,
+	)
 	if err != nil {
 		return nil, err
 	}

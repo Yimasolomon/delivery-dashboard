@@ -41,18 +41,52 @@ func (h *DeliveryHandler) List(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	deliveries, err := h.service.ListDeliveries(r.Context())
+	driverID, _ := strconv.ParseInt(
+		r.URL.Query().Get("driver"),
+		10,
+		64,
+	)
+
+	filter := model.DeliveryFilter{
+		Search:   strings.TrimSpace(r.URL.Query().Get("search")),
+		Status:   strings.TrimSpace(r.URL.Query().Get("status")),
+		DriverID: driverID,
+	}
+
+	deliveries, err := h.service.ListDeliveries(
+		r.Context(),
+		filter,
+	)
+
 	if err != nil {
+		log.Printf("failed to load deliveries: %v", err)
 		http.Error(w, "Failed to load deliveries", http.StatusInternalServerError)
 		return
 	}
 
+	drivers, err := h.driverService.ListDrivers(r.Context())
+	if err != nil {
+		log.Printf("failed to load drivers: %v", err)
+		http.Error(w, "Failed to load drivers", http.StatusInternalServerError)
+		return
+	}
+
 	data := struct {
-		Title      string
-		Deliveries interface{}
+		Title            string
+		Deliveries       interface{}
+		Search           string
+		Status           string
+		DriverID         int64
+		DeliveryStatuses []string
+		Drivers          interface{}
 	}{
-		Title:      "Deliveries",
-		Deliveries: deliveries,
+		Title:            "Deliveries",
+		Deliveries:       deliveries,
+		Search:           filter.Search,
+		Status:           filter.Status,
+		DriverID:         filter.DriverID,
+		DeliveryStatuses: model.DeliveryStatuses,
+		Drivers:          drivers,
 	}
 
 	if err := h.template.ExecuteTemplate(w, "deliveries.html", data); err != nil {
