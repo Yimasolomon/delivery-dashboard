@@ -99,7 +99,15 @@ func (h *DeliveryHandler) List(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data := struct {
+		Title            string
 		Deliveries       interface{}
+		Search           string
+		Status           string
+		DriverID         int64
+		DateFrom         string
+		DateTo           string
+		SortBy           string
+		SortOrder        string
 		Page             int
 		PageSize         int
 		TotalDeliveries  int
@@ -111,7 +119,15 @@ func (h *DeliveryHandler) List(w http.ResponseWriter, r *http.Request) {
 		DeliveryStatuses []string
 		Drivers          interface{}
 	}{
+		Title:            "Deliveries",
 		Deliveries:       deliveries,
+		Search:           filter.Search,
+		Status:           filter.Status,
+		DriverID:         filter.DriverID,
+		DateFrom:         filter.DateFrom,
+		DateTo:           filter.DateTo,
+		SortBy:           filter.SortBy,
+		SortOrder:        filter.SortOrder,
 		Page:             page,
 		PageSize:         pageSize,
 		TotalDeliveries:  totalDeliveries,
