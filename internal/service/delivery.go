@@ -25,6 +25,13 @@ func (s *DeliveryService) ListDeliveries(
 	return s.repository.List(ctx, filter)
 }
 
+func (s *DeliveryService) CountDeliveries(
+	ctx context.Context,
+	filter model.DeliveryFilter,
+) (int, error) {
+	return s.repository.Count(ctx, filter)
+}
+
 func (s *DeliveryService) GetDelivery(ctx context.Context, id int64) (model.Delivery, error) {
 	return s.repository.GetByID(ctx, id)
 }
