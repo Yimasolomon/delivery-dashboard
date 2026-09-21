@@ -41,10 +41,6 @@ func main() {
 		log.Fatalf("failed to load templates: %v", err)
 	}
 
-	app := &Application{
-		Templates: templates,
-	}
-
 	deliveryRepository := repository.NewDeliveryRepository(db)
 	deliveryService := service.NewDeliveryService(deliveryRepository)
 
@@ -54,6 +50,9 @@ func main() {
 	driverRepository := repository.NewDriverRepository(db)
 	driverService := service.NewDriverService(driverRepository)
 
+	dashboardRepository := repository.NewDashboardRepository(db)
+	dashboardService := service.NewDashboardService(dashboardRepository)
+
 	deliveryHandler := handler.NewDeliveryHandler(
 		deliveryService,
 		customerService,
@@ -61,9 +60,14 @@ func main() {
 		templates,
 	)
 
+	dashboardHandler := handler.NewDashboardHandler(
+		dashboardService,
+		templates,
+	)
+
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("/", app.homeHandler)
+	mux.HandleFunc("/", dashboardHandler.Dashboard)
 
 	mux.HandleFunc("/deliveries", deliveryHandler.List)
 	mux.HandleFunc("/deliveries/create", deliveryHandler.CreateRoute)

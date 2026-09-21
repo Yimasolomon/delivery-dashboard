@@ -22,3 +22,10 @@ h1 {
 p {
     color: #64748b;
 }
+
+#statusChart,
+#deliveryTrendChart {
+    max-width: 500px;
+    max-height: 350px;
+    margin: 0 auto;
+}

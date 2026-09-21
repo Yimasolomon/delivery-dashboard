@@ -1,0 +1,101 @@
+{{define "dashboard.html"}}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>{{.Title}}</title>
+
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+    <main>
+        <h1>Delivery Dashboard</h1>
+
+        <section>
+            <div>
+                <h2>Total Deliveries</h2>
+                <p>{{.Stats.Total}}</p>
+            </div>
+
+            <div>
+                <h2>Pending</h2>
+                <p>{{.Stats.Pending}}</p>
+            </div>
+
+            <div>
+                <h2>In Transit</h2>
+                <p>{{.Stats.InTransit}}</p>
+            </div>
+
+            <div>
+                <h2>Out for Delivery</h2>
+                <p>{{.Stats.OutForDelivery}}</p>
+            </div>
+
+            <div>
+                <h2>Delivered</h2>
+                <p>{{.Stats.Delivered}}</p>
+            </div>
+
+            <div>
+                <h2>Failed</h2>
+                <p>{{.Stats.Failed}}</p>
+            </div>
+
+            <div>
+                <h2>Delayed</h2>
+                <p>{{.Stats.Delayed}}</p>
+            </div>
+        </section>
+
+        <section>
+            <h2>Delivery Status Distribution</h2>
+
+            <div>
+                <canvas id="statusChart"></canvas>
+            </div>
+        </section>
+
+        <section>
+            <h2>Delivery Trends</h2>
+
+            <div>
+                <canvas id="deliveryTrendChart"></canvas>
+            </div>
+        </section>
+
+        <script>
+            const statusCounts = [
+                {{range .StatusCounts}}
+                {
+                    status: "{{.Status}}",
+                    count: {{.Count}}
+                },
+                {{end}}
+            ];
+        </script>
+
+        <script>
+            const deliveryTrends = [
+                {{range .DeliveryTrends}}
+                {
+                    date: "{{.Date}}",
+                    count: {{.Count}}
+                },
+                {{end}}
+            ];
+        </script>
+
+        <p>
+            <a href="/deliveries">View Deliveries</a>
+        </p>
+    </main>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="/static/js/app.js"></script>
+
+</body>
+</html>
+{{end}}
