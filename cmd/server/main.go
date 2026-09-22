@@ -60,14 +60,32 @@ func main() {
 		templates,
 	)
 
+	driverHandler := handler.NewDriverHandler(
+		driverService,
+		templates,
+	)
+
 	dashboardHandler := handler.NewDashboardHandler(
 		dashboardService,
+		templates,
+	)
+
+	customerHandler := handler.NewCustomerHandler(
+		customerService,
 		templates,
 	)
 
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/", dashboardHandler.Dashboard)
+
+	mux.HandleFunc("/customers", customerHandler.List)
+	mux.HandleFunc("/customers/create", customerHandler.CreateRoute)
+	mux.HandleFunc("/customers/", customerHandler.EditRoute)
+
+	mux.HandleFunc("/drivers", driverHandler.List)
+	mux.HandleFunc("/drivers/create", driverHandler.CreateRoute)
+	mux.HandleFunc("/drivers/", driverHandler.EditRoute)
 
 	mux.HandleFunc("/deliveries", deliveryHandler.List)
 	mux.HandleFunc("/deliveries/create", deliveryHandler.CreateRoute)

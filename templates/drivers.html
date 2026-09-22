@@ -1,0 +1,75 @@
+{{define "drivers.html"}}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{.Title}}</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+<main class="page">
+
+    <div class="page-header">
+        <div>
+            <h1>Drivers</h1>
+            <p>Manage delivery drivers.</p>
+        </div>
+
+        <a href="/drivers/create">Add Driver</a>
+    </div>
+
+    <section class="table-section">
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Phone</th>
+                    <th>Vehicle</th>
+                    <th>Registration</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+
+            <tbody>
+            {{range .Drivers}}
+                <tr>
+                    <td>{{.Name}}</td>
+                    <td>{{.Phone}}</td>
+                    <td>{{.Vehicle}}</td>
+                    <td>{{.VehicleRegistration}}</td>
+                    <td>{{.Status}}</td>
+                    <td class="actions">
+                        <a href="/drivers/{{.ID}}/edit">
+                            Edit
+                        </a>
+
+                        <form
+                            method="POST"
+                            action="/drivers/{{.ID}}/delete"
+                            style="display:inline;"
+                            onsubmit="return confirm('Delete driver?');"
+                        >
+                            <button type="submit">
+                                Delete
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            {{else}}
+                <tr>
+                    <td colspan="6">
+                        No drivers found.
+                    </td>
+                </tr>
+            {{end}}
+            </tbody>
+        </table>
+    </section>
+
+</main>
+
+</body>
+</html>
+{{end}}

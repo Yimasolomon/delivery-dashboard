@@ -1,0 +1,100 @@
+{{define "customers.html"}}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>{{.Title}}</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+
+<body>
+
+<main class="page">
+
+    <div class="page-header">
+
+        <div>
+            <h1>Customers</h1>
+            <p>Manage delivery customers.</p>
+        </div>
+
+        <a href="/customers/create">
+            Add Customer
+        </a>
+
+    </div>
+
+
+    <section class="table-section">
+
+        <table>
+
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Phone</th>
+                    <th>Email</th>
+                    <th>Address</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+
+
+            <tbody>
+
+            {{range .Customers}}
+
+                <tr>
+
+                    <td>{{.Name}}</td>
+
+                    <td>{{.Phone}}</td>
+
+                    <td>{{.Email}}</td>
+
+                    <td>{{.Address}}</td>
+
+                    <td>
+                        <a href="/customers/{{.ID}}/edit">
+                            Edit
+                        </a>
+
+                        <form
+                            method="POST"
+                            action="/customers/{{.ID}}/delete"
+                            style="display:inline;"
+                            onsubmit="return confirm('Delete customer?');"
+                        >
+
+                            <button type="submit">
+                                Delete
+                            </button>
+
+                        </form>
+                    </td>
+
+                </tr>
+
+            {{else}}
+
+                <tr>
+                    <td colspan="5">
+                        No customers found.
+                    </td>
+                </tr>
+
+            {{end}}
+
+            </tbody>
+
+        </table>
+
+    </section>
+
+</main>
+
+</body>
+
+</html>
+{{end}}

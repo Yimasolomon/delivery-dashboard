@@ -1,0 +1,95 @@
+{{define "driver-edit.html"}}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{.Title}}</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+<main class="page">
+
+    <h1>Edit Driver</h1>
+
+    <form method="POST">
+
+        <label for="name">Name</label>
+        <input
+            type="text"
+            id="name"
+            name="name"
+            value="{{.Driver.Name}}"
+            required
+        >
+
+        <label for="phone">Phone</label>
+        <input
+            type="text"
+            id="phone"
+            name="phone"
+            value="{{.Driver.Phone}}"
+            required
+        >
+
+        <label for="vehicle">Vehicle</label>
+        <input
+            type="text"
+            id="vehicle"
+            name="vehicle"
+            value="{{.Driver.Vehicle}}"
+            required
+        >
+
+        <label for="vehicle_registration">
+            Vehicle Registration
+        </label>
+        <input
+            type="text"
+            id="vehicle_registration"
+            name="vehicle_registration"
+            value="{{.Driver.VehicleRegistration}}"
+            required
+        >
+
+        <label for="status">Status</label>
+        <select id="status" name="status" required>
+
+            <option
+                value="available"
+                {{if eq .Driver.Status "available"}}selected{{end}}
+            >
+                Available
+            </option>
+
+            <option
+                value="on_delivery"
+                {{if eq .Driver.Status "on_delivery"}}selected{{end}}
+            >
+                On Delivery
+            </option>
+
+            <option
+                value="offline"
+                {{if eq .Driver.Status "offline"}}selected{{end}}
+            >
+                Offline
+            </option>
+
+        </select>
+
+        <button type="submit">
+            Update Driver
+        </button>
+
+    </form>
+
+    <p>
+        <a href="/drivers">Back to Drivers</a>
+    </p>
+
+</main>
+
+</body>
+</html>
+{{end}}

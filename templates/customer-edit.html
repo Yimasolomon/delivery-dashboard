@@ -1,0 +1,61 @@
+{{define "customer-edit.html"}}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{.Title}}</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+
+<body>
+
+<main class="page">
+
+<h1>Edit Customer</h1>
+
+<form method="POST">
+
+    <label>Name</label>
+    <input 
+        type="text" 
+        name="name"
+        value="{{.Customer.Name}}"
+        required
+    >
+
+    <label>Phone</label>
+    <input 
+        type="text"
+        name="phone"
+        value="{{.Customer.Phone}}"
+        required
+    >
+
+    <label>Email</label>
+    <input 
+        type="email"
+        name="email"
+        value="{{.Customer.Email}}"
+    >
+
+    <label>Address</label>
+    <textarea name="address">{{.Customer.Address}}</textarea>
+
+
+    <button type="submit">
+        Update Customer
+    </button>
+
+</form>
+
+
+<p>
+<a href="/customers">
+Back to Customers
+</a>
+</p>
+
+</main>
+
+</body>
+</html>
+{{end}}

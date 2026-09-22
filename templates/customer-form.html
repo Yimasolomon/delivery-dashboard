@@ -1,0 +1,43 @@
+{{define "customer-form.html"}}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{.Title}}</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+
+<body>
+
+<main class="page">
+
+<h1>Create Customer</h1>
+
+<form method="POST" action="/customers/create">
+
+    <label>Name</label>
+    <input type="text" name="name" required>
+
+    <label>Phone</label>
+    <input type="text" name="phone" required>
+
+    <label>Email</label>
+    <input type="email" name="email">
+
+    <label>Address</label>
+    <textarea name="address"></textarea>
+
+    <button type="submit">
+        Save Customer
+    </button>
+
+</form>
+
+<p>
+<a href="/customers">Back to Customers</a>
+</p>
+
+</main>
+
+</body>
+</html>
+{{end}}

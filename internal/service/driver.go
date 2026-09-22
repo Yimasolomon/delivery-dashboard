@@ -25,6 +25,13 @@ func (s *DriverService) GetDriver(ctx context.Context, id int64) (model.Driver, 
 	return s.repository.GetByID(ctx, id)
 }
 
+func (s *DriverService) HasDeliveries(
+	ctx context.Context,
+	id int64,
+) (bool, error) {
+	return s.repository.HasDeliveries(ctx, id)
+}
+
 func (s *DriverService) CreateDriver(ctx context.Context, driver model.Driver) (int64, error) {
 	return s.repository.Create(ctx, driver)
 }

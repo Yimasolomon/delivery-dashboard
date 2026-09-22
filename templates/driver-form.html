@@ -1,0 +1,72 @@
+{{define "driver-form.html"}}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{.Title}}</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+<main class="page">
+
+    <h1>Create Driver</h1>
+
+    <form method="POST" action="/drivers/create">
+
+        <label for="name">Name</label>
+        <input
+            type="text"
+            id="name"
+            name="name"
+            required
+        >
+
+        <label for="phone">Phone</label>
+        <input
+            type="text"
+            id="phone"
+            name="phone"
+            required
+        >
+
+        <label for="vehicle">Vehicle</label>
+        <input
+            type="text"
+            id="vehicle"
+            name="vehicle"
+            required
+        >
+
+        <label for="vehicle_registration">
+            Vehicle Registration
+        </label>
+        <input
+            type="text"
+            id="vehicle_registration"
+            name="vehicle_registration"
+            required
+        >
+
+        <label for="status">Status</label>
+        <select id="status" name="status" required>
+            <option value="available">Available</option>
+            <option value="on_delivery">On Delivery</option>
+            <option value="offline">Offline</option>
+        </select>
+
+        <button type="submit">
+            Save Driver
+        </button>
+
+    </form>
+
+    <p>
+        <a href="/drivers">Back to Drivers</a>
+    </p>
+
+</main>
+
+</body>
+</html>
+{{end}}

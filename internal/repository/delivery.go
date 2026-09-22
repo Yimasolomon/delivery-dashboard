@@ -72,8 +72,16 @@ func (r *DeliveryRepository) List(
 				OR d.delivery_address LIKE '%' || ? || '%'
 			)
 			AND (
-				? = ''
-				OR d.status = ?
+					? = ''
+					OR (
+							? != 'delayed'
+							AND d.status = ?
+					)
+					OR (
+							? = 'delayed'
+							AND d.estimated_delivery < CURRENT_TIMESTAMP
+							AND d.status NOT IN ('delivered', 'cancelled', 'failed')
+					)
 			)
 			AND (
 				? = 0
@@ -97,6 +105,8 @@ func (r *DeliveryRepository) List(
 		filter.Search,
 		filter.Status,
 		filter.Status,
+		filter.Status,
+		filter.Status,
 		filter.DriverID,
 		filter.DriverID,
 		filter.DateFrom,
@@ -104,7 +114,6 @@ func (r *DeliveryRepository) List(
 		filter.DateTo,
 		filter.DateTo,
 		filter.PageSize,
-		(filter.Page-1)*filter.PageSize,
 		offset,
 	)
 	if err != nil {
@@ -168,8 +177,16 @@ func (r *DeliveryRepository) Count(
 				OR d.delivery_address LIKE '%' || ? || '%'
 			)
 			AND (
-				? = ''
-				OR d.status = ?
+					? = ''
+					OR (
+							? != 'delayed'
+							AND d.status = ?
+					)
+					OR (
+							? = 'delayed'
+							AND d.estimated_delivery < CURRENT_TIMESTAMP
+							AND d.status NOT IN ('delivered', 'cancelled', 'failed')
+					)
 			)
 			AND (
 				? = 0
@@ -189,6 +206,8 @@ func (r *DeliveryRepository) Count(
 		filter.Search,
 		filter.Search,
 		filter.Search,
+		filter.Status,
+		filter.Status,
 		filter.Status,
 		filter.Status,
 		filter.DriverID,
@@ -253,6 +272,27 @@ func (r *DeliveryRepository) GetByID(ctx context.Context, id int64) (model.Deliv
 	}
 
 	return delivery, nil
+}
+
+func (r *DriverRepository) HasDeliveries(
+	ctx context.Context,
+	id int64,
+) (bool, error) {
+	var exists bool
+
+	err := r.db.QueryRowContext(ctx, `
+		SELECT EXISTS (
+			SELECT 1
+			FROM deliveries
+			WHERE driver_id = ?
+		)
+	`, id).Scan(&exists)
+
+	if err != nil {
+		return false, err
+	}
+
+	return exists, nil
 }
 
 func (r *DeliveryRepository) Create(ctx context.Context, delivery model.Delivery) (int64, error) {

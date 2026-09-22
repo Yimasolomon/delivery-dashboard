@@ -67,6 +67,8 @@ func (h *DeliveryHandler) List(w http.ResponseWriter, r *http.Request) {
 		PageSize:  pageSize,
 	}
 
+	log.Printf("delivery filter: %+v", filter)
+
 	deliveries, err := h.service.ListDeliveries(
 		r.Context(),
 		filter,

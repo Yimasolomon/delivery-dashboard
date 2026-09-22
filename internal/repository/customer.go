@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"log"
 
 	"delivery-dashboard/internal/model"
 )
@@ -142,11 +143,35 @@ func (r *CustomerRepository) Update(ctx context.Context, customer model.Customer
 		return err
 	}
 
+	log.Printf("customer rows affected: %d", rowsAffected)
+
 	if rowsAffected == 0 {
 		return sql.ErrNoRows
 	}
 
 	return nil
+}
+
+func (r *CustomerRepository) HasDeliveries(
+	ctx context.Context,
+	id int64,
+) (bool, error) {
+
+	var exists bool
+
+	err := r.db.QueryRowContext(ctx, `
+		SELECT EXISTS (
+			SELECT 1
+			FROM deliveries
+			WHERE customer_id = ?
+		)
+	`, id).Scan(&exists)
+
+	if err != nil {
+		return false, err
+	}
+
+	return exists, nil
 }
 
 func (r *CustomerRepository) Delete(ctx context.Context, id int64) error {

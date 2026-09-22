@@ -27,6 +27,10 @@
                 <select name="status">
                     <option value="">All Statuses</option>
 
+                    <option value="delayed" {{if eq .Status "delayed"}}selected{{end}}>
+                        delayed
+                    </option>
+
                     {{range .DeliveryStatuses}}
                         <option
                             value="{{.}}"
@@ -38,19 +42,19 @@
                 </select>
 
                 <label for="date_from">From</label>
-                    <input
-                        type="date"
-                        id="date_from"
-                        name="date_from"
-                        value="{{.DateFrom}}"
-                    >
+                <input
+                    type="date"
+                    id="date_from"
+                    name="date_from"
+                    value="{{.DateFrom}}"
+                >
 
-                    <label for="date_to">To</label>
-                    <input
-                        type="date"
-                        id="date_to"
-                        name="date_to"
-                        value="{{.DateTo}}"
+                <label for="date_to">To</label>
+                <input
+                    type="date"
+                    id="date_to"
+                    name="date_to"
+                    value="{{.DateTo}}"
                 >
 
                 <select name="driver">
@@ -122,8 +126,27 @@
                         <td>{{.PickupAddress}}</td>
                         <td>{{.DeliveryAddress}}</td>
                         <td>{{.EstimatedDelivery}}</td>
-                        <td>
-                            <a href="/deliveries/{{.ID}}">View Details</a>
+                        <td class="actions">
+
+                            <a href="/deliveries/{{.ID}}">
+                                View
+                            </a>
+
+                            <a href="/deliveries/{{.ID}}/edit">
+                                Edit
+                            </a>
+
+                            <form
+                                method="POST"
+                                action="/deliveries/{{.ID}}/delete"
+                                onsubmit="return confirm('Are you sure you want to delete this delivery?');"
+                                style="display:inline;"
+                            >
+                                <button type="submit">
+                                    Delete
+                                </button>
+                            </form>
+
                         </td>
                     </tr>
                     {{else}}
@@ -134,9 +157,6 @@
                 </tbody>
             </table>
         </section>
-    </main>
-
-            </section>
 
         {{if gt .TotalPages 1}}
         <section class="pagination">

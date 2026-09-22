@@ -36,3 +36,10 @@ func (s *CustomerService) UpdateCustomer(ctx context.Context, customer model.Cus
 func (s *CustomerService) DeleteCustomer(ctx context.Context, id int64) error {
 	return s.repository.Delete(ctx, id)
 }
+
+func (s *CustomerService) HasDeliveries(
+	ctx context.Context,
+	id int64,
+) (bool, error) {
+	return s.repository.HasDeliveries(ctx, id)
+}
