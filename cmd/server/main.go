@@ -53,6 +53,9 @@ func main() {
 	dashboardRepository := repository.NewDashboardRepository(db)
 	dashboardService := service.NewDashboardService(dashboardRepository)
 
+	reportRepository := repository.NewReportRepository(db)
+	reportService := service.NewReportService(reportRepository)
+
 	deliveryHandler := handler.NewDeliveryHandler(
 		deliveryService,
 		customerService,
@@ -75,6 +78,11 @@ func main() {
 		templates,
 	)
 
+	reportHandler := handler.NewReportHandler(
+		reportService,
+		templates,
+	)
+
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/", dashboardHandler.Dashboard)
@@ -86,6 +94,8 @@ func main() {
 	mux.HandleFunc("/drivers", driverHandler.List)
 	mux.HandleFunc("/drivers/create", driverHandler.CreateRoute)
 	mux.HandleFunc("/drivers/", driverHandler.EditRoute)
+
+	mux.HandleFunc("/reports", reportHandler.Reports)
 
 	mux.HandleFunc("/deliveries", deliveryHandler.List)
 	mux.HandleFunc("/deliveries/create", deliveryHandler.CreateRoute)

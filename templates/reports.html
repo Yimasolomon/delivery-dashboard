@@ -1,0 +1,169 @@
+{{define "reports.html"}}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{.Title}}</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <main class="page">
+        <h1>{{.Title}}</h1>
+        <p>Delivery performance and activity overview.</p>
+
+        <section class="report-filters">
+            <div class="report-filter-header">
+                <div>
+                    <h2>Report Filters</h2>
+                    <p>Select a date range to filter the report data.</p>
+                </div>
+            </div>
+
+            <form method="GET" action="/reports" class="report-filter-form">
+                <div class="form-group">
+                    <label for="start_date">Start Date</label>
+                    <input
+                        type="date"
+                        id="start_date"
+                        name="start_date"
+                        value="{{.Filter.StartDate}}"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="end_date">End Date</label>
+                    <input
+                        type="date"
+                        id="end_date"
+                        name="end_date"
+                        value="{{.Filter.EndDate}}"
+                    >
+                </div>
+
+                <div class="filter-actions">
+                    <button type="submit" class="filter-button">
+                        Apply Filter
+                    </button>
+
+                    <a href="/reports" class="clear-button">
+                        Clear
+                    </a>
+                </div>
+            </form>
+        </section>
+
+        <section class="stats-grid">
+            <div class="stat-card">
+                <span class="stat-label">Total Deliveries</span>
+                <strong>{{.Summary.Total}}</strong>
+            </div>
+
+            <div class="stat-card">
+                <span class="stat-label">Pending</span>
+                <strong>{{.Summary.Pending}}</strong>
+            </div>
+
+            <div class="stat-card">
+                <span class="stat-label">Picked Up</span>
+                <strong>{{.Summary.PickedUp}}</strong>
+            </div>
+
+            <div class="stat-card">
+                <span class="stat-label">In Transit</span>
+                <strong>{{.Summary.InTransit}}</strong>
+            </div>
+
+            <div class="stat-card">
+                <span class="stat-label">Out for Delivery</span>
+                <strong>{{.Summary.OutForDelivery}}</strong>
+            </div>
+
+            <div class="stat-card">
+                <span class="stat-label">Delivered</span>
+                <strong>{{.Summary.Delivered}}</strong>
+            </div>
+
+            <div class="stat-card">
+                <span class="stat-label">Failed</span>
+                <strong>{{.Summary.Failed}}</strong>
+            </div>
+
+            <div class="stat-card">
+                <span class="stat-label">Cancelled</span>
+                <strong>{{.Summary.Cancelled}}</strong>
+            </div>
+
+            <div class="stat-card">
+                <span class="stat-label">Delayed</span>
+                <strong>{{.Summary.Delayed}}</strong>
+            </div>
+        </section>
+
+        <section class="report-section">
+            <h2>Driver Performance</h2>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Driver</th>
+                            <th>Total</th>
+                            <th>Delivered</th>
+                            <th>Failed</th>
+                            <th>Active</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {{range .DriverPerformance}}
+                        <tr>
+                            <td>{{.DriverName}}</td>
+                            <td>{{.Total}}</td>
+                            <td>{{.Delivered}}</td>
+                            <td>{{.Failed}}</td>
+                            <td>{{.Active}}</td>
+                        </tr>
+                        {{else}}
+                        <tr>
+                            <td colspan="5">No driver performance data available.</td>
+                        </tr>
+                        {{end}}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="report-section">
+            <h2>Customer Activity</h2>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Customer</th>
+                            <th>Total Deliveries</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {{range .CustomerActivity}}
+                        <tr>
+                            <td>{{.CustomerName}}</td>
+                            <td>{{.Total}}</td>
+                        </tr>
+                        {{else}}
+                        <tr>
+                            <td colspan="2">No customer activity data available.</td>
+                        </tr>
+                        {{end}}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
+{{end}}
