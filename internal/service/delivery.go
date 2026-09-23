@@ -9,12 +9,17 @@ import (
 )
 
 type DeliveryService struct {
-	repository *repository.DeliveryRepository
+	repository    *repository.DeliveryRepository
+	driverService *DriverService
 }
 
-func NewDeliveryService(repository *repository.DeliveryRepository) *DeliveryService {
+func NewDeliveryService(
+	repository *repository.DeliveryRepository,
+	driverService *DriverService,
+) *DeliveryService {
 	return &DeliveryService{
-		repository: repository,
+		repository:    repository,
+		driverService: driverService,
 	}
 }
 
@@ -99,10 +104,37 @@ func (s *DeliveryService) UpdateStatus(
 		)
 	}
 
-	return s.repository.UpdateStatus(
+	err = s.repository.UpdateStatus(
 		ctx,
 		deliveryID,
 		status,
 		note,
 	)
+	if err != nil {
+		return err
+	}
+
+	if delivery.DriverID != 0 {
+		switch status {
+		case "out_for_delivery":
+			err = s.driverService.UpdateStatus(
+				ctx,
+				delivery.DriverID,
+				"on_delivery",
+			)
+
+		case "delivered", "failed":
+			err = s.driverService.UpdateStatus(
+				ctx,
+				delivery.DriverID,
+				"available",
+			)
+		}
+
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

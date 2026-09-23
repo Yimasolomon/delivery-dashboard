@@ -42,13 +42,17 @@ func main() {
 	}
 
 	deliveryRepository := repository.NewDeliveryRepository(db)
-	deliveryService := service.NewDeliveryService(deliveryRepository)
 
 	customerRepository := repository.NewCustomerRepository(db)
 	customerService := service.NewCustomerService(customerRepository)
 
 	driverRepository := repository.NewDriverRepository(db)
 	driverService := service.NewDriverService(driverRepository)
+
+	deliveryService := service.NewDeliveryService(
+		deliveryRepository,
+		driverService,
+	)
 
 	dashboardRepository := repository.NewDashboardRepository(db)
 	dashboardService := service.NewDashboardService(dashboardRepository)
