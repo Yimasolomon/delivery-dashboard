@@ -40,6 +40,18 @@ func (s *DriverService) UpdateDriver(ctx context.Context, driver model.Driver) e
 	return s.repository.Update(ctx, driver)
 }
 
+func (s *DriverService) UpdateStatus(
+	ctx context.Context,
+	driverID int64,
+	status string,
+) error {
+	return s.repository.UpdateStatus(
+		ctx,
+		driverID,
+		status,
+	)
+}
+
 func (s *DriverService) DeleteDriver(ctx context.Context, id int64) error {
 	return s.repository.Delete(ctx, id)
 }

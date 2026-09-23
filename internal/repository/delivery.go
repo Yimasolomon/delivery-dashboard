@@ -274,27 +274,6 @@ func (r *DeliveryRepository) GetByID(ctx context.Context, id int64) (model.Deliv
 	return delivery, nil
 }
 
-func (r *DriverRepository) HasDeliveries(
-	ctx context.Context,
-	id int64,
-) (bool, error) {
-	var exists bool
-
-	err := r.db.QueryRowContext(ctx, `
-		SELECT EXISTS (
-			SELECT 1
-			FROM deliveries
-			WHERE driver_id = ?
-		)
-	`, id).Scan(&exists)
-
-	if err != nil {
-		return false, err
-	}
-
-	return exists, nil
-}
-
 func (r *DeliveryRepository) Create(ctx context.Context, delivery model.Delivery) (int64, error) {
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {

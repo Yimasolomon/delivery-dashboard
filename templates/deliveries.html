@@ -8,12 +8,18 @@
     <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
+
+{{template "navigation.html" .}}
     <main class="page">
         <section class="page-header">
             <div>
                 <h1>Deliveries</h1>
                 <p>Manage and track deliveries.</p>
             </div>
+
+            <a href="/deliveries/create" class="button">
+                Create Delivery
+            </a>
 
             <form method="GET" action="/deliveries">
 

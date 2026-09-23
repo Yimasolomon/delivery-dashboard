@@ -177,3 +177,55 @@ func (r *DriverRepository) Delete(ctx context.Context, id int64) error {
 
 	return nil
 }
+
+func (r *DriverRepository) UpdateStatus(
+	ctx context.Context,
+	driverID int64,
+	status string,
+) error {
+
+	result, err := r.db.ExecContext(ctx, `
+                UPDATE drivers
+                SET status = ?
+                WHERE id = ?
+        `,
+		status,
+		driverID,
+	)
+
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rowsAffected == 0 {
+		return sql.ErrNoRows
+	}
+
+	return nil
+}
+
+func (r *DriverRepository) HasDeliveries(
+	ctx context.Context,
+	id int64,
+) (bool, error) {
+	var exists bool
+
+	err := r.db.QueryRowContext(ctx, `
+		SELECT EXISTS (
+			SELECT 1
+			FROM deliveries
+			WHERE driver_id = ?
+		)
+	`, id).Scan(&exists)
+
+	if err != nil {
+		return false, err
+	}
+
+	return exists, nil
+}

@@ -43,12 +43,12 @@ func (r *ReportRepository) GetSummary(
 			), 0)
 		FROM deliveries
 		WHERE (
-			? = ''
-			OR substr(delivery_date, 1, 10) <= ?
+				? = ''
+				OR substr(delivery_date, 1, 10) >= ?
 		)
 		AND (
-			? = ''
-			OR substr(delivery_date, 1, 10) >= ?
+				? = ''
+				OR substr(delivery_date, 1, 10) <= ?
 		)
 	`,
 		filter.StartDate,
@@ -106,7 +106,7 @@ func (r *ReportRepository) GetDriverPerformance(
 			)
 			AND (
 				? = ''
-				OR substr(del.delivery_date, 1, 10) >= ?
+				OR substr(del.delivery_date, 1, 10) <= ?
 			)
 		GROUP BY d.id, d.name
 		ORDER BY d.name
@@ -165,7 +165,7 @@ func (r *ReportRepository) GetCustomerActivity(
 			)
 			AND (
 				? = ''
-				OR substr(del.delivery_date, 1, 10) >= ?
+				OR substr(del.delivery_date, 1, 10) <= ?
 			)
 		GROUP BY c.id, c.name
 		ORDER BY c.name

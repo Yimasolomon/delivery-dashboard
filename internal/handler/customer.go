@@ -66,23 +66,12 @@ func (h *CustomerHandler) CreateRoute(
 	w http.ResponseWriter,
 	r *http.Request,
 ) {
-	if strings.HasSuffix(r.URL.Path, "/delete") {
-		if r.Method != http.MethodPost {
-			w.Header().Set("Allow", "POST")
-			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-			return
-		}
-
-		h.Delete(w, r)
-		return
-	}
-
 	switch r.Method {
 	case http.MethodGet:
-		h.EditForm(w, r)
+		h.CreateForm(w, r)
 
 	case http.MethodPost:
-		h.Update(w, r)
+		h.Create(w, r)
 
 	default:
 		w.Header().Set("Allow", "GET, POST")
@@ -174,20 +163,40 @@ func (h *CustomerHandler) Create(
 }
 
 func (h *CustomerHandler) EditRoute(
-	w http.ResponseWriter,
-	r *http.Request,
+    w http.ResponseWriter,
+    r *http.Request,
 ) {
-	switch r.Method {
-	case http.MethodGet:
-		h.EditForm(w, r)
 
-	case http.MethodPost:
-		h.Update(w, r)
+    if strings.HasSuffix(r.URL.Path, "/delete") {
+        if r.Method != http.MethodPost {
+            w.Header().Set("Allow", "POST")
+            http.Error(
+                w,
+                "Method not allowed",
+                http.StatusMethodNotAllowed,
+            )
+            return
+        }
 
-	default:
-		w.Header().Set("Allow", "GET, POST")
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-	}
+        h.Delete(w, r)
+        return
+    }
+
+    switch r.Method {
+    case http.MethodGet:
+        h.EditForm(w, r)
+
+    case http.MethodPost:
+        h.Update(w, r)
+
+    default:
+        w.Header().Set("Allow", "GET, POST")
+        http.Error(
+            w,
+            "Method not allowed",
+            http.StatusMethodNotAllowed,
+        )
+    }
 }
 
 func (h *CustomerHandler) EditForm(
@@ -215,6 +224,8 @@ func (h *CustomerHandler) EditForm(
 		http.NotFound(w, r)
 		return
 	}
+
+	log.Printf("customer id parsed: %d", id)
 
 	customer, err := h.service.GetCustomer(
 		r.Context(),
@@ -329,6 +340,7 @@ func (h *CustomerHandler) Delete(
 	w http.ResponseWriter,
 	r *http.Request,
 ) {
+	
 	idString := strings.TrimPrefix(
 		r.URL.Path,
 		"/customers/",
